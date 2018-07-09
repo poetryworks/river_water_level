@@ -7,7 +7,6 @@ from email.header import Header
 
 # 時刻
 from datetime import datetime
-
 # html request
 import requests
 # html scraping
@@ -15,15 +14,13 @@ from bs4 import BeautifulSoup
 import re
 suii = 0
 # URL先のhtml取得
-# 国土交通省川の防災情報の観測所データページで10分毎の水位を選択
+# 国土交通省　川の防災情報の観測所データページで10分毎の水位を選択したURL
 res=requests.get('http://www.river.go.jp/kawabou/ipSuiiKobetu.do?obsrvId=0665700400003&gamenId=01-1003&stgGrpKind=survForeKjExpl&fldCtlParty=no/&fvrt=yes&timeType=10')
 # エンコード推定機能をONに
 res.encoding = res.apparent_encoding
-# print(res.status_code)
 # エラーチェック
 res.raise_for_status()
-# print(res.text)
-# 取得したhtmlをパース
+# 取得したhtmlをパース(html5libのインストールが必要)
 bs = BeautifulSoup(res.content,'html5lib')
 
 # 観測地名を取得
@@ -41,8 +38,9 @@ elem = elemss[-1]
 elem0 = elem.find_all("td")
 # 時刻
 jikoku = str.strip(elem0[0].string)
-# 水位
+# 水位(文字列、表示・送信用)
 suii = str.strip(elem0[1].string)
+# 水位(数値、判定用)
 suii_float = float(suii)
 print(jikoku)
 print(suii)
@@ -53,14 +51,14 @@ srv_port = 587                 # ポート番号
 srv_user = 'XXXXXXXXXXXXXXXXXXXXXX'            # サーバのユーザ名
 srv_pw   = 'XXXXXXXXXXXXXXXXXXXXXX'          # サーバのパスワード
 jp_encoding = 'iso-2022-jp'    # 日本語文字エンコーディングの指定
-add_sender = 'XXXXXX@kuhp.kyoto-u.ac.jp'  # 差出人アドレスの設定
-add_to = 'XXXXX@kuhp.kyoto-u.ac.jp,YYYYY@kuhp.kyoto-u.ac.jp'
-#add_bcc = 'XXXX@XXXXXX.jp'     # BCCの複製を送るアドレス
+add_sender = 'XXXXXX@XXXXXXXXXXXX.jp'  # 差出人アドレスの設定
+add_to = 'XXXXX@XXXXXXXXXXXX.jp,YYYYY@XXXXXXXXXXXX.jp'	# 宛先アドレスの設定
+#add_bcc = 'XXXX@XXXXXX.jp'     # BCCアドレスの設定
 mail_subject = kansokujo + 'の水位:' + suii + "m"         # 件名
 mail_body = jikoku + "の" + kansokujo + "の水位は" + suii + "mです。"	# 本文
 
 # 水位が??m以上又は??時だけ送信
-if (suii_float > 1.6 or ( datetime.now().hour == 10 and datetime.now().minute < 30 ) ) :
+if (suii_float > 1.6 or ( datetime.now().hour == 8 and datetime.now().minute < 10 ) ) :
 	# SMTPサーバへの接続
 	server = smtplib.SMTP(srv_smtp, srv_port)
 	server.ehlo()
